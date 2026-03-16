@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大砲算術塔防 - 連線強化版</title>
+    <title>大砲算術守衛戰 - Papa Lab</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -53,54 +53,28 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
         }
         
-        #start-screen { flex-direction: row; gap: 60px; padding: 0 40px; }
-        .start-left { display: flex; flex-direction: column; align-items: center; }
-
-        #leaderboard-panel {
-            width: 420px; height: 600px; background: rgba(0,0,0,0.85);
-            border: 4px solid #f1c40f; border-radius: 20px; padding: 25px;
-            display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(241,196,15,0.3);
-        }
-        #lb-content {
-            flex: 1; overflow-y: auto; margin-top: 15px; padding-right: 10px;
-        }
-        #lb-content::-webkit-scrollbar { width: 8px; }
-        #lb-content::-webkit-scrollbar-thumb { background: #f1c40f; border-radius: 4px; }
-        .lb-row {
-            display: flex; justify-content: space-between; font-size: 24px; padding: 15px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.15); font-weight: bold;
-        }
-
-        .overlay-title { font-size: 80px; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255,255,255,0.5); text-align: center; }
-        .overlay-text { font-size: 36px; margin-bottom: 40px; color: #bdc3c7; text-align: center; }
+        .overlay-title { font-size: 80px; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
+        .overlay-text { font-size: 36px; margin-bottom: 40px; color: #bdc3c7; }
         
-        .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 650px; }
+        .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 700px; }
         .mode-btn {
-            padding: 20px; font-size: 32px; font-weight: bold;
-            border: none; border-radius: 15px; cursor: pointer; color: white; transition: 0.3s;
+            padding: 25px; font-size: 36px; font-weight: bold;
+            border: none; border-radius: 20px; cursor: pointer; color: white; transition: 0.3s;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
         .mode-btn.add { background: #2ecc71; } 
         .mode-btn.sub { background: #3498db; } 
-        .mode-btn.inf { background: #9b59b6; grid-column: span 2; font-size: 36px; } 
+        .mode-btn.inf { background: #9b59b6; grid-column: span 2; font-size: 42px; } 
         .mode-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
         
         .big-btn {
-            width: 350px; padding: 20px; font-size: 32px; font-weight: bold; margin: 10px;
+            width: 400px; padding: 20px; font-size: 36px; font-weight: bold;
             border: none; border-radius: 20px; cursor: pointer; background: #57606f; color: white; transition: 0.3s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); margin-top: 20px;
         }
         .big-btn.primary { background: #2ecc71; }
         .big-btn.danger { background: #e74c3c; }
         .big-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
-
-        #player-name-input {
-            font-size: 36px; padding: 15px 25px; border-radius: 15px;
-            border: 4px solid #f1c40f; text-align: center; margin-bottom: 40px;
-            background: rgba(255,255,255,0.9); color: #2f3542; font-weight: bold;
-            outline: none; width: 450px; font-family: "Microsoft JhengHei", sans-serif;
-        }
-        #player-name-input:focus { box-shadow: 0 0 25px #f1c40f; }
 
         #sys-buttons { position: absolute; top: 20px; right: 20px; display: flex; gap: 15px; z-index: 4000; }
         .icon-btn { width: 52px; height: 52px; background: rgba(0,0,0,0.6); border: 2px solid white; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
@@ -147,31 +121,6 @@
         @keyframes mWalkL { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-5px) rotate(12deg); } }
         @keyframes mWalkR { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-5px) rotate(-12deg); } }
 
-        .m-eye { position: absolute; background: white; transition: 0.2s; }
-        .m-eye::after { content: ''; position: absolute; background: black; border-radius: 50%; }
-        .m-mouth { position: absolute; left: 50%; transform: translateX(-50%); background: transparent; transition: 0.2s; }
-        
-        .m-type-0 .m-eye { top: 22px; width: 28px; height: 28px; border-radius: 50%; }
-        .m-type-0 .m-eye.l { left: 12px; } .m-type-0 .m-eye.r { right: 12px; }
-        .m-type-0 .m-eye::after { top: 10px; left: 10px; width: 7px; height: 7px; }
-        .m-type-0 .m-mouth { bottom: 18px; width: 20px; height: 10px; border: 3px solid white; border-radius: 50% 50% 10% 10%; border-bottom: none; }
-        
-        .m-type-1 .m-eye { top: 26px; width: 28px; height: 20px; border-radius: 0 0 15px 15px; }
-        .m-type-1 .m-eye.l { left: 10px; transform: rotate(15deg); } .m-type-1 .m-eye.r { right: 10px; transform: rotate(-15deg); }
-        .m-type-1 .m-eye::after { top: 4px; left: 10px; width: 8px; height: 8px; }
-        .m-type-1 .m-mouth { bottom: 16px; width: 16px; height: 6px; border: 3px solid white; background: white; border-radius: 4px; }
-        
-        .m-type-2 .m-eye { top: 28px; width: 26px; height: 14px; border-radius: 15px 15px 0 0; }
-        .m-type-2 .m-eye.l { left: 14px; } .m-type-2 .m-eye.r { right: 14px; }
-        .m-type-2 .m-eye::after { top: 4px; left: 9px; width: 6px; height: 6px; }
-        .m-type-2 .m-mouth { bottom: 14px; width: 24px; height: 12px; border: 3px solid white; border-top: none; border-radius: 10% 10% 50% 50%; }
-        
-        .m-type-3 .m-eye.l { top: 15px; left: 8px; width: 35px; height: 35px; border-radius: 50%; }
-        .m-type-3 .m-eye.l::after { top: 16px; left: 16px; width: 9px; height: 9px; }
-        .m-type-3 .m-eye.r { top: 30px; right: 15px; width: 18px; height: 18px; border-radius: 50%; }
-        .m-type-3 .m-eye.r::after { top: 6px; left: 6px; width: 5px; height: 5px; }
-        .m-type-3 .m-mouth { bottom: 16px; width: 12px; height: 16px; border-radius: 50%; background: white; }
-
         .bullet { position: absolute; width: 34px; height: 22px; background: #f1c40f; border-radius: 50%; box-shadow: 0 0 15px #f39c12; z-index: 6; }
     </style>
 </head>
@@ -195,23 +144,14 @@
         </div>
 
         <div id="start-screen" class="overlay-screen">
-            <div class="start-left">
-                <div class="overlay-title" style="color: #f1c40f;">大砲算術守衛戰</div>
-                <div class="overlay-text">請選擇防守模式，保護城牆！</div>
-                <div class="mode-grid">
-                    <button class="mode-btn add" onclick="startGame(1)">10以內 加法</button>
-                    <button class="mode-btn add" onclick="startGame(2)">20以內 加法</button>
-                    <button class="mode-btn sub" onclick="startGame(3)">10以內 減法</button>
-                    <button class="mode-btn sub" onclick="startGame(4)">20以內 減法</button>
-                    <button class="mode-btn inf" onclick="startGame(5)">🔥 無限綜合模式 🔥</button>
-                </div>
-            </div>
-            
-            <div id="leaderboard-panel">
-                <h2 style="text-align: center; color: #f1c40f; margin-bottom: 5px; font-size: 32px; letter-spacing: 2px;">🏆 全球英雄榜 🏆</h2>
-                <div id="lb-content">
-                    <div style="text-align: center; color: #aaa; margin-top: 20px; font-size: 24px;">📡 正在連線雲端資料...</div>
-                </div>
+            <div class="overlay-title" style="color: #f1c40f;">大砲算術守衛戰</div>
+            <div class="overlay-text">請選擇防守模式，保護城牆！</div>
+            <div class="mode-grid">
+                <button class="mode-btn add" onclick="startGame(1)">10以內 加法</button>
+                <button class="mode-btn add" onclick="startGame(2)">20以內 加法</button>
+                <button class="mode-btn sub" onclick="startGame(3)">10以內 減法</button>
+                <button class="mode-btn sub" onclick="startGame(4)">20以內 減法</button>
+                <button class="mode-btn inf" onclick="startGame(5)">🔥 無限綜合模式 🔥</button>
             </div>
         </div>
 
@@ -225,29 +165,13 @@
         <div id="victory-screen" class="overlay-screen" style="display: none;">
             <div class="overlay-title" style="color: #2ecc71;">恭喜過關！</div>
             <div class="overlay-text">你成功守護了城牆，數學太棒了！</div>
-            <div style="display: flex; gap: 20px;">
-                <button class="big-btn primary" onclick="showUploadScreen()">🏆 上傳積分</button>
-                <button class="big-btn" onclick="location.reload()">🏠 回到首頁</button>
-            </div>
+            <button class="big-btn primary" onclick="location.reload()">🏠 回到首頁</button>
         </div>
 
         <div id="gameover-screen" class="overlay-screen" style="display: none;">
             <div class="overlay-title" style="color: #ff4757;">防線崩潰...</div>
             <div class="overlay-text" id="final-kills"></div>
-            <div style="display: flex; gap: 20px;">
-                <button class="big-btn primary" onclick="showUploadScreen()">🏆 上傳積分</button>
-                <button class="big-btn" onclick="location.reload()">🏠 回到首頁</button>
-            </div>
-        </div>
-
-        <div id="upload-screen" class="overlay-screen" style="display: none;">
-            <div class="overlay-title" style="color: #f1c40f;">上傳你的榮耀</div>
-            <div class="overlay-text" id="upload-score-text">最終擊殺數：0</div>
-            <input type="text" id="player-name-input" placeholder="輸入英雄大名" maxlength="10" autocomplete="off" />
-            <div style="display: flex; gap: 20px;">
-                <button class="big-btn primary" id="confirm-upload-btn" onclick="confirmUpload()">確認上傳</button>
-                <button class="big-btn" onclick="location.reload()">取消</button>
-            </div>
+            <button class="big-btn" onclick="location.reload()">🏠 回到首頁</button>
         </div>
 
         <div id="controls-layout">
@@ -297,148 +221,6 @@
 </div>
 
 <script>
-/**
- * =========================================
- * 🌍 LootLocker 雲端排行榜 API 系統 (防呆優化版)
- * =========================================
- */
-const LL_API_KEY = "dev_13d980e2f8494ed6bd6341276f9f14fd";
-const LL_LEADERBOARD_ID = "33624";
-let llSessionToken = "";
-
-window.onload = initLootLocker;
-
-async function initLootLocker() {
-    let pid = localStorage.getItem('papalab_player_id');
-    if (!pid) {
-        pid = 'guest_' + Math.floor(Math.random() * 1000000000);
-        localStorage.setItem('papalab_player_id', pid);
-    }
-    try {
-        const res = await fetch('https://api.lootlocker.io/game/v2/session/guest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ game_identifier: LL_API_KEY, game_version: "1.0.0", player_identifier: pid })
-        });
-        const data = await res.json();
-        
-        // 【關鍵修復】如果 LootLocker 拒絕登入，直接在排行榜顯示錯誤原因
-        if (!res.ok || !data.session_token) {
-            console.error("LootLocker 拒絕連線:", data);
-            document.getElementById('lb-content').innerHTML = `
-                <div style="text-align:center; color:#e74c3c; margin-top:20px;">
-                    排行榜連線被拒絕 🛑<br>
-                    <span style="font-size:16px; color:#bdc3c7;">請回 LootLocker 確認<br>「Guest Login」是否已設為 Enabled 並 Save！</span>
-                </div>`;
-            return;
-        }
-
-        llSessionToken = data.session_token;
-        fetchLeaderboard(); 
-    } catch(e) {
-        console.error("LootLocker 連線失敗", e);
-        document.getElementById('lb-content').innerHTML = '<div style="text-align:center; color:#e74c3c; margin-top:20px;">無法連線至排行榜，請檢查網路狀態。</div>';
-    }
-}
-
-async function fetchLeaderboard() {
-    if (!llSessionToken) return;
-    try {
-        const res = await fetch(`https://api.lootlocker.io/game/leaderboards/${LL_LEADERBOARD_ID}/list?count=10`, {
-            method: 'GET',
-            headers: { 'x-session-token': llSessionToken }
-        });
-        if (!res.ok) throw new Error("讀取榜單失敗");
-        
-        const data = await res.json();
-        renderLeaderboard(data.items);
-    } catch(e) {
-        console.error("讀取榜單失敗", e);
-    }
-}
-
-function renderLeaderboard(items) {
-    const container = document.getElementById('lb-content');
-    if (!items || items.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color:#aaa; margin-top:20px; font-size:24px;">目前還沒有人上榜，<br>快來搶頭香！</div>';
-        return;
-    }
-    
-    let html = '';
-    items.forEach((item, index) => {
-        let name = item.player.name || item.player.id || '神秘英雄';
-        let rankColor = index === 0 ? '#f1c40f' : (index === 1 ? '#bdc3c7' : (index === 2 ? '#cd7f32' : '#fff'));
-        let rankIcon = index === 0 ? '👑' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `#${item.rank}`));
-        
-        html += `
-            <div class="lb-row" style="color: ${rankColor};">
-                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">
-                    <span style="display:inline-block; width: 40px;">${rankIcon}</span> ${name}
-                </span>
-                <span>${item.score} 殺</span>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
-}
-
-function showUploadScreen() {
-    document.getElementById('victory-screen').style.display = 'none';
-    document.getElementById('gameover-screen').style.display = 'none';
-    document.getElementById('upload-score-text').innerText = `本次擊殺數：${state.kills}`;
-    document.getElementById('upload-screen').style.display = 'flex';
-    document.getElementById('player-name-input').focus();
-}
-
-async function confirmUpload() {
-    const nameInput = document.getElementById('player-name-input').value.trim();
-    const btn = document.getElementById('confirm-upload-btn');
-    
-    if (!nameInput) {
-        alert("請輸入帥氣的大名喔！");
-        return;
-    }
-    // 【防呆】如果根本沒拿到 Token 就按上傳，直接擋下來
-    if (!llSessionToken) {
-        alert("尚未成功連線至伺服器，無法上傳！請確認 LootLocker 的 Guest Login 設定。");
-        return;
-    }
-    
-    btn.innerText = "連線登錄中...";
-    btn.disabled = true;
-
-    try {
-        // 1. 設定玩家名稱
-        const nameRes = await fetch('https://api.lootlocker.io/game/player/name', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'x-session-token': llSessionToken },
-            body: JSON.stringify({ name: nameInput })
-        });
-        if (!nameRes.ok) throw new Error("設定名字失敗");
-
-        // 2. 提交分數
-        const scoreRes = await fetch(`https://api.lootlocker.io/game/leaderboards/${LL_LEADERBOARD_ID}/submit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-session-token': llSessionToken },
-            body: JSON.stringify({ score: state.kills })
-        });
-        if (!scoreRes.ok) throw new Error("上傳分數失敗");
-        
-        alert("上傳成功！你已留名青史！");
-        location.reload(); 
-    } catch(e) {
-        console.error("上傳失敗", e);
-        alert("上傳失敗，請確認設定或網路連線。");
-        btn.innerText = "確認上傳";
-        btn.disabled = false;
-    }
-}
-
-/**
- * =========================================
- * 遊戲主邏輯設定
- * =========================================
- */
 const CONFIG = {
     w: 1280, h: 720, battleW: 960,
     bulletSpeed: 28,
@@ -461,6 +243,28 @@ function resize() {
     container.style.transform = `scale(${scale})`;
 }
 window.onresize = resize; resize();
+
+const fsBtn = document.getElementById('fullscreen-btn');
+fsBtn.onclick = () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+};
+document.addEventListener('fullscreenchange', () => {
+    document.getElementById('icon-enter').style.display = document.fullscreenElement ? 'none' : 'block';
+    document.getElementById('icon-exit').style.display = document.fullscreenElement ? 'block' : 'none';
+});
+
+const muteBtn = document.getElementById('mute-btn');
+const iconUnmute = document.getElementById('icon-unmute');
+const iconMute = document.getElementById('icon-mute');
+muteBtn.onclick = () => {
+    state.isMuted = !state.isMuted;
+    iconUnmute.style.display = state.isMuted ? 'none' : 'block';
+    iconMute.style.display = state.isMuted ? 'block' : 'none';
+    if (!state.isMuted && audioCtx.state === 'suspended' && !state.isPaused) {
+        audioCtx.resume();
+    }
+};
 
 function togglePause() {
     if (!state.gameActive || state.isGameOver || state.isVictory) return;
@@ -679,11 +483,7 @@ function nextQ() {
 
 function spawn() {
     if (state.isGameOver || state.isVictory || !state.gameActive) return;
-    
-    if (state.isPaused) {
-        setTimeout(spawn, 500); 
-        return;
-    }
+    if (state.isPaused) { setTimeout(spawn, 500); return; }
 
     playSFX('spawn'); 
     const type = Math.floor(Math.random() * 4);
@@ -746,11 +546,9 @@ document.getElementById('missile-btn').onclick = () => {
         const wrapper = document.getElementById('game-wrapper');
         wrapper.classList.add('shake-effect');
         playSFX('fire'); 
-        
         const target = [...state.monsters].sort((a,b)=>a.x - b.x)[0];
         const dx = target.x - 310; const dy = target.y - 275;
         const mAngle = Math.atan2(dy, dx);
-
         const mEl = document.createElement('div');
         mEl.className = 'big-missile'; 
         let mX = 310 + Math.cos(mAngle) * 95 - 60;
@@ -758,37 +556,24 @@ document.getElementById('missile-btn').onclick = () => {
         mEl.style.left = mX + 'px'; mEl.style.top = mY + 'px';
         mEl.style.transform = `rotate(${mAngle}rad)`; 
         document.getElementById('battle-scene').appendChild(mEl);
-        
         let targetHitX = target.x;
         const speed = 15; 
-
         const mInterval = setInterval(() => {
             if (state.isPaused) return; 
-
-            mX += Math.cos(mAngle) * speed; 
-            mY += Math.sin(mAngle) * speed;
+            mX += Math.cos(mAngle) * speed; mY += Math.sin(mAngle) * speed;
             mEl.style.left = mX + 'px'; mEl.style.top = mY + 'px';
-            
-            if (mX >= targetHitX || mX > 1000 || mY > 800 || mY < 0) {
+            if (mX >= targetHitX || mX > 1000) {
                 clearInterval(mInterval); 
                 if(mEl.parentNode) mEl.remove();
                 wrapper.classList.remove('shake-effect');
-                
-                const flash = document.createElement('div');
-                flash.style = "position:absolute; top:0; left:0; width:100%; height:100%; background:white; z-index:500; opacity:0.6;";
-                document.getElementById('battle-scene').appendChild(flash);
-                setTimeout(() => flash.remove(), 80);
-                
                 const toKill = state.monsters.sort((a,b)=>a.x - b.x).slice(0, 10);
                 toKill.forEach(m => {
-                    m.el.style.transform = 'scale(0.6) rotate(15deg)'; 
                     m.el.style.opacity = '0';
                     setTimeout(() => { if(m.el.parentNode) m.el.remove(); }, 300);
                     state.monsters.splice(state.monsters.indexOf(m), 1); 
                     addKill(); 
                 });
-                
-                confetti({ particleCount: 180, spread: 100, origin: { x: (targetHitX / 1280), y: (mY / 720) } });
+                confetti({ particleCount: 150, spread: 70, origin: { x: (targetHitX / 1280), y: (mY / 720) } });
             }
         }, 16);
     }
@@ -796,58 +581,41 @@ document.getElementById('missile-btn').onclick = () => {
 
 function addKill() {
     if (state.isVictory || state.isGameOver) return;
-    state.kills++;
-    updateUI();
-    playSFX('die'); 
-    
-    if (state.gameMode !== 5 && state.kills >= CONFIG.winKills) {
-        triggerVictory();
-    }
+    state.kills++; updateUI(); playSFX('die'); 
+    if (state.gameMode !== 5 && state.kills >= CONFIG.winKills) triggerVictory();
 }
 
 function loop() {
-    if (state.isGameOver || state.isVictory || !state.gameActive) return;
-    
-    if (!state.isPaused) {
-        if (state.monsters.length > 0) {
-            const target = [...state.monsters].sort((a,b)=>a.x - b.x)[0];
-            const legDur = Math.max(0.08, 0.05 / target.speed);
-            const walkPace = legDur * 60; 
-            
-            state.walkTimer++;
-            if (state.walkTimer >= walkPace) {
-                playSFX('walk');
-                state.walkTimer = 0;
+    if (state.isGameOver || state.isVictory || !state.gameActive || state.isPaused) {
+        requestAnimationFrame(loop); return;
+    }
+    if (state.monsters.length > 0) {
+        const target = [...state.monsters].sort((a,b)=>a.x - b.x)[0];
+        const legDur = Math.max(0.08, 0.05 / target.speed);
+        state.walkTimer++;
+        if (state.walkTimer >= legDur * 60) { playSFX('walk'); state.walkTimer = 0; }
+        const dx = (target.x + 42) - 310; const dy = (target.y + 42) - 275; 
+        state.cannonAngle = Math.atan2(dy, dx);
+        document.getElementById('cannon-barrel').style.transform = `rotate(${state.cannonAngle}rad)`;
+    }
+    state.monsters.forEach(m => {
+        m.x -= m.speed; m.el.style.left = m.x + 'px'; m.el.style.top = m.y + 'px';
+        if (m.x <= 140) die(); 
+    });
+    for (let i = state.activeBullets.length-1; i>=0; i--) {
+        const b = state.activeBullets[i];
+        let tx = b.x + 100, ty = b.y;
+        if (state.monsters.includes(b.target)) { tx = b.target.x + 42; ty = b.target.y + 42; }
+        const dx = tx - b.x, dy = ty - b.y; const angle = Math.atan2(dy, dx);
+        b.x += Math.cos(angle) * CONFIG.bulletSpeed; b.y += Math.sin(angle) * CONFIG.bulletSpeed;
+        b.el.style.left = b.x + 'px'; b.el.style.top = b.y + 'px'; b.el.style.transform = `rotate(${angle}rad)`;
+        state.monsters.forEach((m, mIdx) => {
+            if (Math.sqrt(Math.pow(b.x-(m.x+42),2) + Math.pow(b.y-(m.y+42),2)) < 25) { 
+                if (m.el.parentNode) m.el.remove(); state.monsters.splice(mIdx, 1);
+                if (b.el.parentNode) b.el.remove(); state.activeBullets.splice(i, 1);
+                addKill(); 
             }
-
-            const dx = (target.x + 42) - 310; 
-            const dy = (target.y + 42) - 275; 
-            state.cannonAngle = Math.atan2(dy, dx);
-            document.getElementById('cannon-barrel').style.transform = `rotate(${state.cannonAngle}rad)`;
-        }
-
-        state.monsters.forEach(m => {
-            m.x -= m.speed; m.el.style.left = m.x + 'px'; m.el.style.top = m.y + 'px';
-            if (m.x <= 140) die(); 
         });
-
-        for (let i = state.activeBullets.length-1; i>=0; i--) {
-            const b = state.activeBullets[i];
-            let tx = b.x + 100, ty = b.y;
-            if (state.monsters.includes(b.target)) { tx = b.target.x + 42; ty = b.target.y + 42; }
-            const dx = tx - b.x, dy = ty - b.y; const angle = Math.atan2(dy, dx);
-            b.x += Math.cos(angle) * CONFIG.bulletSpeed; b.y += Math.sin(angle) * CONFIG.bulletSpeed;
-            b.el.style.left = b.x + 'px'; b.el.style.top = b.y + 'px'; b.el.style.transform = `rotate(${angle}rad)`;
-            
-            state.monsters.forEach((m, mIdx) => {
-                const d = Math.sqrt(Math.pow(b.x-(m.x+42),2) + Math.pow(b.y-(m.y+42),2));
-                if (d < 25) { 
-                    if (m.el.parentNode) m.el.remove(); state.monsters.splice(mIdx, 1);
-                    if (b.el.parentNode) b.el.remove(); state.activeBullets.splice(i, 1);
-                    addKill(); 
-                }
-            });
-        }
     }
     requestAnimationFrame(loop);
 }
@@ -855,47 +623,24 @@ function loop() {
 function updateUI() {
     document.getElementById('kills-text').innerText = state.gameMode === 5 ? state.kills : `${state.kills} / ${CONFIG.winKills}`;
     document.getElementById('bullet-num').innerText = state.bullets;
-    document.getElementById('bullet-num').style.color = (state.bullets >= 20) ? '#ff4757' : '#f1c40f';
     document.getElementById('fire-btn').disabled = (state.bullets <= 0);
-    const dots = document.querySelectorAll('.dot');
-    dots.forEach((dot, i) => {
+    document.querySelectorAll('.dot').forEach((dot, i) => {
         dot.style.background = i < state.missileCharge ? '#2ecc71' : '#333';
-        dot.style.boxShadow = i < state.missileCharge ? '0 0 8px #2ecc71' : 'none';
     });
     state.missileReady = (state.missileCharge === 5);
-    const mBtn = document.getElementById('missile-btn');
-    mBtn.classList.toggle('ready', state.missileReady); mBtn.disabled = !state.missileReady;
+    document.getElementById('missile-btn').classList.toggle('ready', state.missileReady);
 }
 
 function triggerVictory() {
-    state.isVictory = true;
-    document.getElementById('pause-btn').style.display = 'none'; 
-    stopBGM(); 
-    playSFX('victory'); 
-    
-    state.monsters.forEach(m => { if(m.el.parentNode) m.el.remove(); });
-    state.monsters = [];
-    
-    const duration = 3000;
-    const end = Date.now() + duration;
-    (function frame() {
-        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff4757', '#2ecc71', '#f1c40f'] });
-        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff4757', '#2ecc71', '#f1c40f'] });
-        if (Date.now() < end) requestAnimationFrame(frame);
-    }());
-
+    state.isVictory = true; stopBGM(); playSFX('victory'); 
+    document.getElementById('pause-btn').style.display = 'none';
     document.getElementById('victory-screen').style.display = 'flex';
 }
 
 function die() {
-    state.isGameOver = true; 
-    document.getElementById('pause-btn').style.display = 'none'; 
-    stopBGM(); 
-    playSFX('gameover'); 
-    
-    let killText = state.gameMode === 5 ? `最終擊殺數: ${state.kills}` : `最終擊殺數: ${state.kills} / 50`;
-    document.getElementById('final-kills').innerText = killText;
-    
+    state.isGameOver = true; stopBGM(); playSFX('gameover'); 
+    document.getElementById('pause-btn').style.display = 'none';
+    document.getElementById('final-kills').innerText = state.gameMode === 5 ? `最終擊殺數: ${state.kills}` : `最終擊殺數: ${state.kills} / 50`;
     document.getElementById('gameover-screen').style.display = 'flex';
 }
 </script>
