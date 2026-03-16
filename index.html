@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大砲算術塔防 - 雲端榮耀版</title>
+    <title>大砲算術塔防 - 連線強化版</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -24,7 +24,6 @@
             margin: 0; 
         }
 
-        /* 外層縮放容器 */
         #scale-container {
             width: 1280px; height: 720px;
             min-width: 1280px; min-height: 720px;
@@ -33,7 +32,6 @@
             position: relative;
         }
 
-        /* 內層遊戲容器 */
         #game-wrapper {
             width: 100%; height: 100%;
             background: #000; display: flex;
@@ -49,22 +47,15 @@
         }
         .shake-effect { animation: softShake 0.12s linear infinite; }
 
-        /* 遊戲覆蓋視窗 */
         .overlay-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 3000;
             display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
         }
         
-        /* --- 【更新】首頁專屬的左右分欄排版 --- */
-        #start-screen {
-            flex-direction: row; gap: 60px; padding: 0 40px;
-        }
-        .start-left {
-            display: flex; flex-direction: column; align-items: center;
-        }
+        #start-screen { flex-direction: row; gap: 60px; padding: 0 40px; }
+        .start-left { display: flex; flex-direction: column; align-items: center; }
 
-        /* 排行榜面板設計 */
         #leaderboard-panel {
             width: 420px; height: 600px; background: rgba(0,0,0,0.85);
             border: 4px solid #f1c40f; border-radius: 20px; padding: 25px;
@@ -103,7 +94,6 @@
         .big-btn.danger { background: #e74c3c; }
         .big-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
 
-        /* 輸入框設計 */
         #player-name-input {
             font-size: 36px; padding: 15px 25px; border-radius: 15px;
             border: 4px solid #f1c40f; text-align: center; margin-bottom: 40px;
@@ -165,14 +155,17 @@
         .m-type-0 .m-eye.l { left: 12px; } .m-type-0 .m-eye.r { right: 12px; }
         .m-type-0 .m-eye::after { top: 10px; left: 10px; width: 7px; height: 7px; }
         .m-type-0 .m-mouth { bottom: 18px; width: 20px; height: 10px; border: 3px solid white; border-radius: 50% 50% 10% 10%; border-bottom: none; }
+        
         .m-type-1 .m-eye { top: 26px; width: 28px; height: 20px; border-radius: 0 0 15px 15px; }
         .m-type-1 .m-eye.l { left: 10px; transform: rotate(15deg); } .m-type-1 .m-eye.r { right: 10px; transform: rotate(-15deg); }
         .m-type-1 .m-eye::after { top: 4px; left: 10px; width: 8px; height: 8px; }
         .m-type-1 .m-mouth { bottom: 16px; width: 16px; height: 6px; border: 3px solid white; background: white; border-radius: 4px; }
+        
         .m-type-2 .m-eye { top: 28px; width: 26px; height: 14px; border-radius: 15px 15px 0 0; }
         .m-type-2 .m-eye.l { left: 14px; } .m-type-2 .m-eye.r { right: 14px; }
         .m-type-2 .m-eye::after { top: 4px; left: 9px; width: 6px; height: 6px; }
         .m-type-2 .m-mouth { bottom: 14px; width: 24px; height: 12px; border: 3px solid white; border-top: none; border-radius: 10% 10% 50% 50%; }
+        
         .m-type-3 .m-eye.l { top: 15px; left: 8px; width: 35px; height: 35px; border-radius: 50%; }
         .m-type-3 .m-eye.l::after { top: 16px; left: 16px; width: 9px; height: 9px; }
         .m-type-3 .m-eye.r { top: 30px; right: 15px; width: 18px; height: 18px; border-radius: 50%; }
@@ -306,20 +299,18 @@
 <script>
 /**
  * =========================================
- * 🌍 LootLocker 雲端排行榜 API 系統
+ * 🌍 LootLocker 雲端排行榜 API 系統 (防呆優化版)
  * =========================================
  */
 const LL_API_KEY = "dev_13d980e2f8494ed6bd6341276f9f14fd";
 const LL_LEADERBOARD_ID = "33624";
 let llSessionToken = "";
 
-// 網頁載入時自動初始化連線
 window.onload = initLootLocker;
 
 async function initLootLocker() {
     let pid = localStorage.getItem('papalab_player_id');
     if (!pid) {
-        // 幫首次遊玩的玩家配發一把專屬鑰匙
         pid = 'guest_' + Math.floor(Math.random() * 1000000000);
         localStorage.setItem('papalab_player_id', pid);
     }
@@ -330,8 +321,20 @@ async function initLootLocker() {
             body: JSON.stringify({ game_identifier: LL_API_KEY, game_version: "1.0.0", player_identifier: pid })
         });
         const data = await res.json();
+        
+        // 【關鍵修復】如果 LootLocker 拒絕登入，直接在排行榜顯示錯誤原因
+        if (!res.ok || !data.session_token) {
+            console.error("LootLocker 拒絕連線:", data);
+            document.getElementById('lb-content').innerHTML = `
+                <div style="text-align:center; color:#e74c3c; margin-top:20px;">
+                    排行榜連線被拒絕 🛑<br>
+                    <span style="font-size:16px; color:#bdc3c7;">請回 LootLocker 確認<br>「Guest Login」是否已設為 Enabled 並 Save！</span>
+                </div>`;
+            return;
+        }
+
         llSessionToken = data.session_token;
-        fetchLeaderboard(); // 成功連線後抓取榜單
+        fetchLeaderboard(); 
     } catch(e) {
         console.error("LootLocker 連線失敗", e);
         document.getElementById('lb-content').innerHTML = '<div style="text-align:center; color:#e74c3c; margin-top:20px;">無法連線至排行榜，請檢查網路狀態。</div>';
@@ -345,6 +348,8 @@ async function fetchLeaderboard() {
             method: 'GET',
             headers: { 'x-session-token': llSessionToken }
         });
+        if (!res.ok) throw new Error("讀取榜單失敗");
+        
         const data = await res.json();
         renderLeaderboard(data.items);
     } catch(e) {
@@ -362,7 +367,6 @@ function renderLeaderboard(items) {
     let html = '';
     items.forEach((item, index) => {
         let name = item.player.name || item.player.id || '神秘英雄';
-        // 前三名給予特殊顏色
         let rankColor = index === 0 ? '#f1c40f' : (index === 1 ? '#bdc3c7' : (index === 2 ? '#cd7f32' : '#fff'));
         let rankIcon = index === 0 ? '👑' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `#${item.rank}`));
         
@@ -378,7 +382,6 @@ function renderLeaderboard(items) {
     container.innerHTML = html;
 }
 
-// 顯示上傳畫面
 function showUploadScreen() {
     document.getElementById('victory-screen').style.display = 'none';
     document.getElementById('gameover-screen').style.display = 'none';
@@ -387,7 +390,6 @@ function showUploadScreen() {
     document.getElementById('player-name-input').focus();
 }
 
-// 送出成績
 async function confirmUpload() {
     const nameInput = document.getElementById('player-name-input').value.trim();
     const btn = document.getElementById('confirm-upload-btn');
@@ -396,35 +398,41 @@ async function confirmUpload() {
         alert("請輸入帥氣的大名喔！");
         return;
     }
+    // 【防呆】如果根本沒拿到 Token 就按上傳，直接擋下來
+    if (!llSessionToken) {
+        alert("尚未成功連線至伺服器，無法上傳！請確認 LootLocker 的 Guest Login 設定。");
+        return;
+    }
     
     btn.innerText = "連線登錄中...";
     btn.disabled = true;
 
     try {
         // 1. 設定玩家名稱
-        await fetch('https://api.lootlocker.io/game/player/name', {
+        const nameRes = await fetch('https://api.lootlocker.io/game/player/name', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'x-session-token': llSessionToken },
             body: JSON.stringify({ name: nameInput })
         });
+        if (!nameRes.ok) throw new Error("設定名字失敗");
 
         // 2. 提交分數
-        await fetch(`https://api.lootlocker.io/game/leaderboards/${LL_LEADERBOARD_ID}/submit`, {
+        const scoreRes = await fetch(`https://api.lootlocker.io/game/leaderboards/${LL_LEADERBOARD_ID}/submit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-session-token': llSessionToken },
             body: JSON.stringify({ score: state.kills })
         });
+        if (!scoreRes.ok) throw new Error("上傳分數失敗");
         
         alert("上傳成功！你已留名青史！");
-        location.reload(); // 回到首頁並重新載入榜單
+        location.reload(); 
     } catch(e) {
         console.error("上傳失敗", e);
-        alert("上傳失敗，請檢查網路連線。");
+        alert("上傳失敗，請確認設定或網路連線。");
         btn.innerText = "確認上傳";
         btn.disabled = false;
     }
 }
-
 
 /**
  * =========================================
@@ -454,7 +462,6 @@ function resize() {
 }
 window.onresize = resize; resize();
 
-// 系統按鈕事件
 function togglePause() {
     if (!state.gameActive || state.isGameOver || state.isVictory) return;
     state.isPaused = !state.isPaused;
